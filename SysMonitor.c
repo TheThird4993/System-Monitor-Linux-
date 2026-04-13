@@ -2,56 +2,62 @@
 #include <stdlib.h>
 
 #define STR_SIZE 32
+#define H 0
+#define M 1
+#define S 3
+
+typedef struct System System;
+
+struct System{
+	char kernel_ver[STR_SIZE];
+	char distro[STR_SIZE];
+	char OS[STR_SIZE];
+	int  uptime[3];
+};
 
 int main(int argc, char *argv[]){
-        char sys_info[3][STR_SIZE] = {0, 0, 0};
-        char *temp = "";
-        FILE *fp = popen("uname -s", "r"); // Nome do OS
+	System sysinfo;
+	int uptimeS = 0;
+	char *temp = "";
+	FILE *fp = popen("uname -s", "r"); // Nome do OS
+	      fscanf(fp, "%[^\n]", sysinfo.OS);
+	      
+	pclose(fp);
 
-	if(!fp){
-	  printf("comando \"uname -s\" não executado\n");
-	  return 1;
-	}
-              fscanf(fp, "%[^\n]", sys_info[0]);
+	      fp = popen("cat /etc/os-release | head -n 1", "r"); // ou uname; Versão da distro
+	      
+	      temp = (char*)calloc(STR_SIZE, sizeof(char));
 
-        pclose(fp);
+	      fgets(temp, STR_SIZE, fp);
+	      
+	      for(int i = 0, j = 0, w = 0; i < STR_SIZE; i++){
+	      	if(temp[i] == '"'){
+			w = !w;
+			continue;
+		}
+		if(w) sysinfo.distro[j++] = temp[i];
+	      }
 
-              fp = popen("cat /etc/os-release | head -n 1", "r"); // ou uname; Versão da distro
-	
-	if(!fp){
-	  printf("comando \"cat /etc/os-release\" não executado\n");
-	  return 1;
-	}
+	pclose(fp);
 
-              temp = (char*)calloc(STR_SIZE, sizeof(char));
+	      fp = popen("uname -r", "r"); // Versão do kernel
+	      fscanf(fp, "%[^\n]", sysinfo.kernel_ver);
 
-              fgets(temp, STR_SIZE, fp);
+	pclose(fp);
 
-              for(int i = 0, j = 0, w = 0; i < STR_SIZE; i++){
-                if(temp[i] == '"'){
-                        w = !w;
-                        continue;
-                }
-                if(w) sys_info[1][j++] = temp[i];
-              }
+	      fp = popen("awk '{print $1}' /proc/uptime", "r");
+	      fgets(temp, STR_SIZE, fp);
+		
+	      for(int i = 0; temp[i] != '\n'; i++){
+	      	sysinfo.uptime[S] = (sysinfo.uptime[S] * 10) + (temp[i] - '0');
+	      }
 
-              free(temp);
+	printf("Kernel Version    = %s\n", sysinfo.kernel_ver);
+	printf("Distribution Name = %s\n", sysinfo.distro);
+	printf("OS Name		  = %s\n", sysinfo.OS);
+	printf("uptime real = %s\n", temp);
+	printf("Uptime(secs)      = %d\n", sysinfo.uptime[S]);
 
-        pclose(fp);
-
-              fp = popen("uname -r", "r"); // Versão do kernel
-	
-	if(!fp){
-	  printf("comando \"uname -r\" não executado\n");
-	  return 1;
-	}
-              fscanf(fp, "%[^\n]", sys_info[2]);
-
-        pclose(fp);
-
-        for(int i = 0; i < 3; i++){
-              printf("data[%d] = %s\n", i, sys_info[i]);
-        }
-
+	free(temp);
  return 0;
 }
