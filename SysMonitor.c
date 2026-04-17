@@ -774,6 +774,10 @@ int main(int argc, char *argv[]){
 		free(sysDet.charDev[i].name);
 	}
 	free(sysDet.charDev);
+	for(int i = 0; i < sysDet.numProcs; i++){
+		free(sysDet.procs[i].name);
+	}
+	free(sysDet.procs);
 	
 	return 0;
 }
