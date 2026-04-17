@@ -8,5 +8,7 @@ O .zip não contém todos os arquivos necessários para rodar normalmente no bui
 Pode ser como CGI ou não, dependendo da versão.
 
 A fazer:
+
   Otimizar 
+  
   Fragmentar o código monolítico
