@@ -752,10 +752,9 @@ int main(int argc, char *argv[]){
         }
 
 	printf("\n");
-#endif
-
+#else
 	gerar_pagina_web(&sysDet);
-
+#endif
 	free(sysDet.cpu.name);
 	free(sysDet.cpu.vendor);
 	free(sysDet.kernelVer);
