@@ -791,80 +791,81 @@ int main(int argc, char *argv[]){
 
 // Essa parte é full IA, azar
 void gerar_pagina_web(SysDetails *sysDet) {
-    // 1. O CABEÇALHO OBRIGATÓRIO DO CGI (As duas quebras de linha são de vida ou morte)
+    // Cabeçalho CGI obrigatório
     printf("Content-Type: text/html; charset=UTF-8\n\n");
 
-    // 2. ESTRUTURA DO HTML E CSS (Estilo Dashboard Dark Mode)
     printf("<!DOCTYPE html>\n");
     printf("<html lang='pt-BR'>\n<head>\n");
     printf("    <meta charset='UTF-8'>\n");
     printf("    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n");
-    printf("    <title>CGI SysMonitor Dashboard</title>\n");
+    printf("    <title>SysMonitor Dashboard</title>\n");
     printf("    <style>\n");
-    printf("        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e2e; color: #cdd6f4; margin: 0; padding: 20px; }\n");
+    printf("        body { font-family: 'Segoe UI', sans-serif; background-color: #1e1e2e; color: #cdd6f4; margin: 0; padding: 20px; }\n");
     printf("        .container { max-width: 1200px; margin: auto; }\n");
     printf("        h1, h2 { color: #89b4fa; border-bottom: 2px solid #45475a; padding-bottom: 10px; }\n");
     printf("        .card { background-color: #313244; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }\n");
-    printf("        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }\n");
-    printf("        .procs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; font-family: monospace; background: #181825; padding: 15px; border-radius: 5px; }\n");
-    printf("        .proc-item { padding: 5px; border-left: 3px solid #f38ba8; }\n");
+    printf("        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }\n");
+    printf("        .procs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; font-family: monospace; background: #181825; padding: 15px; border-radius: 5px; }\n");
+    printf("        .proc-item { padding: 5px; border-left: 3px solid #f38ba8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n");
     printf("        table { width: 100%%; border-collapse: collapse; margin-top: 10px; }\n");
-    printf("        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #45475a; }\n");
+    printf("        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #45475a; }\n");
     printf("        th { background-color: #45475a; color: #bac2de; }\n");
     printf("        .highlight { color: #a6e3a1; font-weight: bold; }\n");
+    printf("        .fs-list { font-family: monospace; color: #a6adc8; line-height: 1.6; }\n");
     printf("    </style>\n");
     printf("</head>\n<body>\n");
     printf("<div class='container'>\n");
+    printf("    <h1>🚀 Painel de Monitoramento do Sistema</h1>\n");
 
-    printf("    <h1>🚀 Servidor Linux | Painel de Controle</h1>\n");
-
-    // ================== BLOCO 1: INFO GERAL & CPU/RAM ==================
+    // --- Seção 1: Informações Gerais e Hardware ---
     printf("    <div class='grid-2'>\n");
-
-    // Card Sistema
+    
+    // Card do Sistema
     printf("        <div class='card'>\n");
     printf("            <h2>🖥️ Sistema</h2>\n");
-    printf("            <p><b>SO:</b> %s</p>\n", sysDet->distro);
+    printf("            <p><b>Distribuição:</b> %s</p>\n", sysDet->distro);
     printf("            <p><b>Kernel:</b> %s</p>\n", sysDet->kernelVer);
     printf("            <p><b>Uptime:</b> %02d Dias, %02d:%02d:%02d</p>\n", sysDet->uptime.d, sysDet->uptime.h, sysDet->uptime.m, sysDet->uptime.s);
-    printf("            <p><b>Data do Servidor:</b> %02d/%02d/%d %02d:%02d:%02d</p>\n", sysDet->rtc.day, sysDet->rtc.month, sysDet->rtc.year, sysDet->rtc.h, sysDet->rtc.m, sysDet->rtc.s);
-    printf("            <p><b>Load Avg:</b> %.2f (1m) | %.2f (5m) | %.2f (15m)</p>\n", sysDet->load_1m, sysDet->load_5m, sysDet->load_15m);
+    printf("            <p><b>Tempo Idle:</b> %02d Dias, %02d:%02d:%02d</p>\n", sysDet->idle.d, sysDet->idle.h, sysDet->idle.m, sysDet->idle.s);
+    printf("            <p><b>Data/Hora:</b> %02d/%02d/%d %02d:%02d:%02d</p>\n", sysDet->rtc.day, sysDet->rtc.month, sysDet->rtc.year, sysDet->rtc.h, sysDet->rtc.m, sysDet->rtc.s);
+    printf("            <p><b>Carga (Load):</b> %.2f (1m) | %.2f (5m) | %.2f (15m)</p>\n", sysDet->load_1m, sysDet->load_5m, sysDet->load_15m);
     printf("        </div>\n");
 
-    // Card Hardware
+    // Card de Hardware
     printf("        <div class='card'>\n");
     printf("            <h2>⚙️ Processamento & Memória</h2>\n");
-    printf("            <p><b>Processador:</b> %s</p>\n", sysDet->cpu.name);
+    printf("            <p><b>CPU:</b> %s</p>\n", sysDet->cpu.name);
+    printf("            <p><b>Fabricante:</b> %s</p>\n", sysDet->cpu.vendor);
     printf("            <p><b>Núcleos:</b> %d cores @ %.2f MHz</p>\n", sysDet->cpu.numProcs, sysDet->cpu.mhzProc);
     printf("            <p><b>Uso de CPU:</b> <span class='highlight'>%.2f%%</span></p>\n", sysDet->cpu.uso);
-    printf("            <p><b>Uso de RAM:</b> <span class='highlight'>%ld MB</span> / %ld MB (%.2f%%)</p>\n", sysDet->usedMem, sysDet->totalMem, sysDet->usoRAM);
+    printf("            <p><b>RAM:</b> <span class='highlight'>%ld MB</span> / %ld MB (%.2f%%)</p>\n", sysDet->usedMem, sysDet->totalMem, sysDet->usoRAM);
     printf("        </div>\n");
     printf("    </div>\n");
 
-    // ================== BLOCO 2: REDE E DISCO (Tabelas) ==================
+    // --- Seção 2: Redes e Armazenamento ---
     printf("    <div class='grid-2'>\n");
-
-    // Tabela Rede
+    
+    // Tabela de Rede
     printf("        <div class='card'>\n");
-    printf("            <h2>🌐 Interfaces de Rede</h2>\n");
-    printf("            <table><tr><th>Interface</th><th>Download (RX)</th><th>Upload (TX)</th></tr>\n");
+    printf("            <h2>🌐 Redes</h2>\n");
+    printf("            <table><tr><th>Interface</th><th>RX (Down)</th><th>TX (Up)</th></tr>\n");
     for(int i = 0; i < sysDet->numNd; i++) {
-        printf("                <tr><td>%s</td><td>%.3f MB/s</td><td>%.3f MB/s</td></tr>\n",
+        printf("                <tr><td>%s</td><td>%.3f MB/s</td><td>%.3f MB/s</td></tr>\n", 
                 sysDet->netdev[i].name, sysDet->netdev[i].rxSpeed, sysDet->netdev[i].txSpeed);
     }
     printf("            </table>\n");
     printf("        </div>\n");
 
-    // Tabela Disco
+    // Tabela de Armazenamento
     printf("        <div class='card'>\n");
-    printf("            <h2>💾 Armazenamento (I/O)</h2>\n");
-    printf("            <table><tr><th>Dispositivo</th><th>Leitura</th><th>Escrita</th></tr>\n");
+    printf("            <h2>💾 Armazenamento</h2>\n");
+    printf("            <table><tr><th>Device</th><th>Leitura</th><th>Escrita</th></tr>\n");
     for(int i = 0; i < sysDet->numStr; i++) {
-        int lastChar = strlen(sysDet->str[i].name) - 1;
-        if(sysDet->str[i].name[lastChar] >= '0' && sysDet->str[i].name[lastChar] <= '9') {
-            printf("                <tr><td>%s (Partição)</td><td>-</td><td>-</td></tr>\n", sysDet->str[i].name);
+        int len = strlen(sysDet->str[i].name);
+        if(sysDet->str[i].name[len-1] >= '0' && sysDet->str[i].name[len-1] <= '9') {
+            printf("                <tr><td>%s <small>(Partição)</small></td><td>-</td><td>-</td></tr>\n", sysDet->str[i].name);
         } else {
-            printf("                <tr><td><b>%s</b></td><td>%.3f MB/s</td><td>%.3f MB/s</td></tr>\n",
+            printf("                <tr><td><b>%s</b></td><td>%.3f MB/s</td><td>%.3f MB/s</td></tr>\n", 
                     sysDet->str[i].name, sysDet->str[i].readSpeed, sysDet->str[i].writeSpeed);
         }
     }
@@ -872,19 +873,35 @@ void gerar_pagina_web(SysDetails *sysDet) {
     printf("        </div>\n");
     printf("    </div>\n");
 
-    // ================== BLOCO 3: PROCESSOS (Grid de 4 colunas) ==================
+    // --- Seção 3: FS e Dispositivos ---
+    printf("    <div class='grid-2'>\n");
+    
+    printf("        <div class='card'>\n");
+    printf("            <h2>📂 FS Suportados</h2>\n");
+    printf("            <div class='fs-list'>");
+    for(int i = 0; i < sysDet->numFs; i++) {
+        printf("%s%s", sysDet->fs[i], (i < sysDet->numFs - 1) ? " | " : "");
+    }
+    printf("            </div>\n");
+    printf("        </div>\n");
+
+    printf("        <div class='card'>\n");
+    printf("            <h2>🔌 Dispositivos do Sistema</h2>\n");
+    printf("            <p><b>Caractere:</b> %d detectados</p>\n", sysDet->numDevCh);
+    printf("            <p><b>Bloco:</b> %d detectados</p>\n", sysDet->numDevBlk);
+    printf("        </div>\n");
+    printf("    </div>\n");
+
+    // --- Seção 4: Processos ---
     printf("    <div class='card'>\n");
-    printf("        <h2>⚙️ Processos em Execução (%d total)</h2>\n", sysDet->numProcs);
+    printf("        <h2>⚙️ Processos (%d)</h2>\n", sysDet->numProcs);
     printf("        <div class='procs-grid'>\n");
     for(int i = 0; i < sysDet->numProcs; i++) {
-        // Renderiza cada processo como um "bloquinho". O CSS Grid cuida de alinhar perfeitamente lado a lado.
-        printf("            <div class='proc-item'><b>PID %05d</b>: %s</div>\n",
+        printf("            <div class='proc-item'><b>[%05d]</b> %s</div>\n", 
                 sysDet->procs[i].pid, sysDet->procs[i].name);
     }
     printf("        </div>\n");
     printf("    </div>\n");
 
-    // Fechamento
-    printf("</div>\n"); // Fecha container
-    printf("</body>\n</html>\n");
+    printf("</div>\n</body>\n</html>\n");
 }
