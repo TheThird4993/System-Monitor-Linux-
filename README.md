@@ -10,6 +10,8 @@ Pode ser como CGI ou não, dependendo da versão.
 
 A fazer:
 
-  Otimizar 
+  - Otimizar 
   
-  Fragmentar o código monolítico
+  - Modularizar o código monolítico
+
+  - Transformar em monitoramento em tempo real
