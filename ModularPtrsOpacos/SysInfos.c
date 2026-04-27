@@ -397,75 +397,65 @@ int getFileSystemData(SysDetails *sysDet ){
 }
 
 int getStorageDevicesData(SysDetails *sysDet ){
-	for (int round = 0; round < ATS; round++){
-		{
-			char temp_char[BUFSZ] = { 0 };
-			FILE *f = fopen("/proc/diskstats", "r");
+	char temp_char[BUFSZ] = { 0 };
+	FILE *f = fopen("/proc/diskstats", "r");
 
-			if (!f){
-				printf("/proc/diskstats nao pode ser acessado\n");
-				return -10;
-			}
+	if (!f){
+		printf("/proc/diskstats nao pode ser acessado\n");
+		return -10;
+	}
 
-			int sCapacity = 2; // valor inicial
-			sc secReads = 0, secWritten = 0;
-			sc tempReads = 0, tempWrites = 0;
+	int sCapacity = 2; // valor inicial
+	sc secReads = 0, secWritten = 0;
+	sc tempReads = 0, tempWrites = 0;
 
-			if (!round) sysDet->str = (Storage*)calloc(sCapacity, sizeof(Storage));
+	sysDet->str = (Storage*)calloc(sCapacity, sizeof(Storage));
 
-			while (fgets(temp_char, BUFSZ, f)){
-				char sName[NAMESTR] = { 0 };
-				sscanf(temp_char, "%*d %*d %s %llu %*d %llu %*d %llu %*d %llu %*d %*d", sName, &tempReads, &secReads, &tempWrites, &secWritten);
+	while (fgets(temp_char, BUFSZ, f)){
+		char sName[NAMESTR] = { 0 };
+		sscanf(temp_char, "%*d %*d %s %llu %*d %llu %*d %llu %*d %llu %*d %*d", sName, &tempReads, &secReads, &tempWrites, &secWritten);
 
-				if (strncmp(sName, "loop", 4) && strncmp(sName, "ram", 3) && strncmp(sName, "dm-", 3)){
-					if (!round){
-						if (sysDet->numStr >= sCapacity){
-							sCapacity *= 2;
-							sysDet->str = (Storage*)realloc(sysDet->str, sCapacity*sizeof(Storage));
-						}
+		if (strncmp(sName, "loop", 4) && strncmp(sName, "ram", 3) && strncmp(sName, "dm-", 3)){
+				if (sysDet->numStr >= sCapacity){
+					sCapacity *= 2;
+					sysDet->str = (Storage*)realloc(sysDet->str, sCapacity*sizeof(Storage));
+				}
 
-						sysDet->str[sysDet->numStr].numReads = tempReads;
-						sysDet->str[sysDet->numStr].numWrites = tempWrites;
+				sysDet->str[sysDet->numStr].numReads = tempReads;
+				sysDet->str[sysDet->numStr].numWrites = tempWrites;
 
-						sysDet->str[sysDet->numStr].secReadPrev = secReads;
-						sysDet->str[sysDet->numStr].secWritePrev = secWritten;
+				sysDet->str[sysDet->numStr].secReadPrev = secReads;
+				sysDet->str[sysDet->numStr].secWritePrev = secWritten;
 
-						sysDet->str[sysDet->numStr].name = strdup(sName);
-						sysDet->numStr++;
+				sysDet->str[sysDet->numStr].name = strdup(sName);
+				sysDet->numStr++;
 
-					}
-					else{
-						for (int i = 0; i < sysDet->numStr; i++){
-							if (!strcmp(sName, sysDet->str[i].name)){
-								/* debug
-								printf("TESTE1 STR[%d] RODADA [%d] secReadPrev  = %llu\n", i, round, sysDet->str[i].secReadPrev);
-								printf("                           secWritePrev = %llu\n", sysDet->str[i].secWritePrev);
-								printf("                           secRead      = %llu\n", secReads);
-								printf("                           secWrite     = %llu\n", secWritten);
-								*/
-								sysDet->str[i].readSpeed = ((float)(secReads - sysDet->str[i].secReadPrev) * 512) / MB;
-								sysDet->str[i].writeSpeed = ((float)(secWritten - sysDet->str[i].secWritePrev) * 512) / MB;
 
-								sysDet->str[i].numReads = tempReads;
-								sysDet->str[i].numWrites = tempWrites;
+				for (int i = 0; i < sysDet->numStr; i++){
+					if (!strcmp(sName, sysDet->str[i].name)){
+						/* debug
+						printf("TESTE1 STR[%d] RODADA [%d] secReadPrev  = %llu\n", i, round, sysDet->str[i].secReadPrev);
+						printf("                           secWritePrev = %llu\n", sysDet->str[i].secWritePrev);
+						printf("                           secRead      = %llu\n", secReads);
+						printf("                           secWrite     = %llu\n", secWritten);
+						*/
+						sysDet->str[i].readSpeed = ((float)(secReads - sysDet->str[i].secReadPrev) * 512) / MB;
+						sysDet->str[i].writeSpeed = ((float)(secWritten - sysDet->str[i].secWritePrev) * 512) / MB;
 
-								break;
-							}
-						}
-					}
+						sysDet->str[i].numReads = tempReads;
+						sysDet->str[i].numWrites = tempWrites;
+
+						break;
+			
 				}
 			}
-
-			if (!round){
-				if (sysDet->numStr < sCapacity){
-					sysDet->str = (Storage*)realloc(sysDet->str, sysDet->numStr*sizeof(Storage));
-				}
-				sleep(1);
-			}
-			fclose(f);
 		}
 	}
 
+	if (sysDet->numStr < sCapacity){
+		sysDet->str = (Storage*)realloc(sysDet->str, sysDet->numStr*sizeof(Storage));
+	}
+			
 	// --------------------- TESTE ARMAZENAMENTO ----------------------------------------------
 	/*
 	for(int i = 0; i < sysDet->numStr; i++){
@@ -476,58 +466,56 @@ int getStorageDevicesData(SysDetails *sysDet ){
 	}
 	return -99;
 	*/
+
+	fclose(f);
 	return 0;
 }
 
 int getNetworkDeviceData(SysDetails *sysDet ){
-	for (int roundN = 0; roundN < ATS; roundN++){
-		char temp_char[BUFSZ] = { 0 };
-		FILE *f = fopen("/proc/net/dev", "r");
+	char temp_char[BUFSZ] = { 0 };
+	FILE *f = fopen("/proc/net/dev", "r");
 
-		if (!f){
-			printf("/proc/net/dev nao pode ser acessado\n");
-			return -11;
-		}
+	if (!f){
+		printf("/proc/net/dev nao pode ser acessado\n");
+		return -11;
+	}
 
 		
-		int ndCapacity = 2; // valor inicial // nd = networkdevice
-		int tempCnt = 0;    // contador para pular as duas linhas do /net/dev
-		bc tempRx = 0, tempTx = 0;
-		if (!roundN)sysDet->netdev = (NetworkDevice*)calloc(ndCapacity, sizeof(NetworkDevice));
+	int ndCapacity = 2; // valor inicial // nd = networkdevice
+	int tempCnt = 0;    // contador para pular as duas linhas do /net/dev
+	bc tempRx = 0, tempTx = 0;
+	sysDet->netdev = (NetworkDevice*)calloc(ndCapacity, sizeof(NetworkDevice));
 
-		while (fgets(temp_char, BUFSZ, f)){
-			if (tempCnt++ > 1){
-				char ndName[NAMESTR] = { 0 };
-				sscanf(temp_char, "%[^:]: %llu %*s %*s %*s %*s %*s %*s %*s %llu", ndName, &tempRx, &tempTx);
-				if (!roundN){
-					if (sysDet->numNd >= ndCapacity){
-						ndCapacity *= 2;
-						sysDet->netdev = (NetworkDevice*)realloc(sysDet->netdev, ndCapacity*sizeof(NetworkDevice));
-					}
-					sysDet->netdev[sysDet->numNd].rxBytesPrev = tempRx;
-					sysDet->netdev[sysDet->numNd].txBytesPrev = tempTx;
+	while (fgets(temp_char, BUFSZ, f)){
+		if (tempCnt++ > 1){
+			char ndName[NAMESTR] = { 0 };
+			sscanf(temp_char, "%[^:]: %llu %*s %*s %*s %*s %*s %*s %*s %llu", ndName, &tempRx, &tempTx);
 
-					sysDet->netdev[sysDet->numNd].name = strdup(ndName);
-					sysDet->numNd++;
+				if (sysDet->numNd >= ndCapacity){
+					ndCapacity *= 2;
+					sysDet->netdev = (NetworkDevice*)realloc(sysDet->netdev, ndCapacity*sizeof(NetworkDevice));
 				}
-				else{
-					for (int i = 0; i < sysDet->numNd; i++){
-						if (!strcmp(ndName, sysDet->netdev[i].name)){
-							sysDet->netdev[i].rxSpeed = ((float)(tempRx - sysDet->netdev[i].rxBytesPrev)) / MB;
-							sysDet->netdev[i].txSpeed = ((float)(tempTx - sysDet->netdev[i].txBytesPrev)) / MB;
-						}
+				sysDet->netdev[sysDet->numNd].rxBytesPrev = tempRx;
+				sysDet->netdev[sysDet->numNd].txBytesPrev = tempTx;
+
+				sysDet->netdev[sysDet->numNd].name = strdup(ndName);
+				sysDet->numNd++;
+			
+				for (int i = 0; i < sysDet->numNd; i++){
+					if (!strcmp(ndName, sysDet->netdev[i].name)){
+						sysDet->netdev[i].rxSpeed = ((float)(tempRx - sysDet->netdev[i].rxBytesPrev)) / MB;
+						sysDet->netdev[i].txSpeed = ((float)(tempTx - sysDet->netdev[i].txBytesPrev)) / MB;
 					}
 				}
-			}
+			
 		}
-		if (!roundN){
-			if (sysDet->numNd < ndCapacity){
-				sysDet->netdev = (NetworkDevice*)realloc(sysDet->netdev, sysDet->numNd*sizeof(NetworkDevice));
-			}
-			sleep(1);
-		}
-	fclose(f);
 	}
+
+	if (sysDet->numNd < ndCapacity){
+		sysDet->netdev = (NetworkDevice*)realloc(sysDet->netdev, sysDet->numNd*sizeof(NetworkDevice));
+	}
+		
+	fclose(f);
 	return 0;
 }
 

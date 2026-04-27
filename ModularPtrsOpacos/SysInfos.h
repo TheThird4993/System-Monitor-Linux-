@@ -7,7 +7,6 @@
 #include <unistd.h> // p/ sleep
 #include <dirent.h> // p/ checar os PIDs
 
-#define ATS 2       // numero de atualizações
 #define BUFSZ 256
 #define CPUMODES 10
 #define TZ 3       // Time zone, neste caso UTC-3
