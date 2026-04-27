@@ -12,6 +12,6 @@ A fazer:
 
   - Otimizar 
   
-  - Modularizar o código monolítico
+  - ~~Modularizar o código monolítico~~
 
   - Transformar em monitoramento em tempo real
