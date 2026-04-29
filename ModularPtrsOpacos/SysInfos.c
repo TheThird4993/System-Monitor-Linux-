@@ -344,8 +344,8 @@ int getRAMData(SysDetails *sysDet ){
 			sscanf(temp_char, "%*[^:]: %ld", &sysDet->availableMem);
 			cnt++;
 		}
-		if (cnt != 2) printf("\nDados da memoria nao coletados\n\n");
 	}
+		if (cnt != 2) printf("\nDados da memoria nao coletados\n\n");
 
 	//------------------------ Processamento das infos coletadas -------------------------------
 
